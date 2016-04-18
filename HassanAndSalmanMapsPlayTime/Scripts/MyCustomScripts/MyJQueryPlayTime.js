@@ -190,6 +190,7 @@ function initializeMyJqueryPlayTime() {
 function myJqueryPromisesPlayTimeFunc_with_newMarkerCoordinates() {
     console.log("MyApp.MyBouncingMarker.position: ");
     console.log(MyApp.MyBouncingMarker.position);
+    MyApp.scaleInputRadiusValue = parseInt($('#scaleInputRadius').val());
     //here we apply the new coordinates from the dragged marker:
     MyApp.MyPossitionObject.latitudeValue = MyApp.MyBouncingMarker.position.lat();
     MyApp.MyPossitionObject.longtitudeValue = MyApp.MyBouncingMarker.position.lng();
@@ -219,6 +220,7 @@ function myJqueryPromisesPlayTimeFunc_with_newMarkerCoordinates() {
             withPromise_fillDistancesValuesUsingDistanceFormula(MyApp).done(function (resultsDistancesArray) {
                 $.each(resultsDistancesArray, function (key, value) {
                     MyApp.MyPlacesObjectsArrayForHTMLTable[key].distanceFromCenter = roundTheNumberToTwoDecimalPlacesAndReturnTheNewValue(value) + " meters";
+                    MyApp.MyPlacesObjectsArrayForHTMLTable[key].distanceFromCenterNumberOnly = roundTheNumberToTwoDecimalPlacesAndReturnTheNewValue(value);
                 });
 
                 withPromise_drawAndFillMyHTMLTable(MyApp).done(function () {
@@ -263,6 +265,7 @@ function myJqueryPromisesPlayTimeFunc() {
 
                     $.each(resultsDistancesArray, function (key, value) {
                         MyApp.MyPlacesObjectsArrayForHTMLTable[key].distanceFromCenter = roundTheNumberToTwoDecimalPlacesAndReturnTheNewValue(value) + " meters";
+                        MyApp.MyPlacesObjectsArrayForHTMLTable[key].distanceFromCenterNumberOnly = roundTheNumberToTwoDecimalPlacesAndReturnTheNewValue(value);
                     });
 
                     withPromise_drawAndFillMyHTMLTable(MyApp).done(function () {
@@ -283,6 +286,45 @@ function myJqueryPromisesPlayTimeFunc() {
 var withPromise_filterTheTableResultsBasedOnRadiusAndDistance = function (MyApp) {
     var _deferred = new $.Deferred();
     console.log("Inside: withPromise_filterTheTableResultsBasedOnRadiusAndDistance() - ");
+    //
+
+    $('#tableSearchPlacesResults > tbody').empty();
+    $('#lblSearchResultsCount').text("Found ( 0 ) Points-Of-Interests");
+    //
+    var countFilteredResults = 0;
+    //
+    for (var i = 0; i < MyApp.MyPlacesObjectsArrayForHTMLTable.length; i++) {
+        var strTableRowHtml = "<tr>";
+
+        if (MyApp.MyPlacesObjectsArrayForHTMLTable[i].distanceFromCenterNumberOnly > MyApp.scaleInputRadiusValue) {
+            //outside the circle
+
+            strTableRowHtml = strTableRowHtml + "<td><i class='fa fa-close'></i>" + (i + 1) + "</td>";
+            strTableRowHtml = strTableRowHtml + "<td>" + MyApp.MyPlacesObjectsArrayForHTMLTable[i].placeName + "<br/> <a class='btn btn-info' href='#' onclick='display_specificLocationMarkerAndInfoWindow(" + i + ")'>Show On Map</a></td>";
+            strTableRowHtml = strTableRowHtml + "<td>" + MyApp.MyPlacesObjectsArrayForHTMLTable[i].type + "</td>";
+            strTableRowHtml = strTableRowHtml + "<td>" + MyApp.MyPlacesObjectsArrayForHTMLTable[i].distanceFromCenter + "</td>";
+            strTableRowHtml = strTableRowHtml + "<td>" + MyApp.MyPlacesObjectsArrayForHTMLTable[i].latitudeHorizontalLines + "</td>";
+            strTableRowHtml = strTableRowHtml + "<td>" + MyApp.MyPlacesObjectsArrayForHTMLTable[i].longtitudeVerticalLines + "</td>";
+            strTableRowHtml = strTableRowHtml + "</tr>";
+        }
+        else {
+            //inside the circle radius
+            countFilteredResults = countFilteredResults + 1;
+            strTableRowHtml = "<tr bgcolor='ff8000'>";
+            strTableRowHtml = strTableRowHtml + "<td><i class='fa fa-check-circle'></i>" + (i + 1) + "</td>";
+            strTableRowHtml = strTableRowHtml + "<td>" + MyApp.MyPlacesObjectsArrayForHTMLTable[i].placeName + "<br/> <a class='btn btn-info' href='#' onclick='display_specificLocationMarkerAndInfoWindow(" + i + ")'>Show On Map</a></td>";
+            strTableRowHtml = strTableRowHtml + "<td>" + MyApp.MyPlacesObjectsArrayForHTMLTable[i].type + "</td>";
+            strTableRowHtml = strTableRowHtml + "<td>" + MyApp.MyPlacesObjectsArrayForHTMLTable[i].distanceFromCenter + "</td>";
+            strTableRowHtml = strTableRowHtml + "<td>" + MyApp.MyPlacesObjectsArrayForHTMLTable[i].latitudeHorizontalLines + "</td>";
+            strTableRowHtml = strTableRowHtml + "<td>" + MyApp.MyPlacesObjectsArrayForHTMLTable[i].longtitudeVerticalLines + "</td>";
+            strTableRowHtml = strTableRowHtml + "</tr>";
+        };
+
+        $('#tableSearchPlacesResults > tbody').append(strTableRowHtml);
+    }
+
+    $('#lblSearchResultsCount').html("Displaying Below (" + MyApp.MyPlacesObjectsArrayForHTMLTable.length + ") Points-Of-Interests <br/>" + "Found (" + countFilteredResults + ") within the " + MyApp.scaleInputRadiusValue + " meters Radius ");
+
     //
 
     //
@@ -437,6 +479,7 @@ var withPromise_doSearch = function (searchResultsArray, searchResultsStatus, My
             placeName: "" + value.name + "",
             type: "" + getStringLocationsConcatenatedFromArray(value.types) + "",
             distanceFromCenter: "--- meters",
+            distanceFromCenterNumberOnly: 0.00,
             latitudeHorizontalLines: "" + roundTheNumberToTwoDecimalPlacesAndReturnTheNewValue(value.geometry.location.lat()) + "",
             longtitudeVerticalLines: "" + roundTheNumberToTwoDecimalPlacesAndReturnTheNewValue(value.geometry.location.lng()) + "",
             locationObject: value.geometry.location
