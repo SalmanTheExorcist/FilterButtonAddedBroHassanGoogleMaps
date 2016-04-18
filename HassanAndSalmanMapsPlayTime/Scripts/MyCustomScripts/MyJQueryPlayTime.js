@@ -147,6 +147,8 @@ function initializeMyJqueryPlayTime() {
         $('#btnJQueryPromisesPlayTime').addClass('hidden');
         $('#btnJQueryPromisesPlayTime_Refresh').removeClass('hidden');
         $('#btnJQueryPromisesPlayTime_Refresh_Two').removeClass('hidden');
+        $('#btnFilterResultsByRadiusAndDistance').removeClass('hidden');
+
         myJqueryPromisesPlayTimeFunc();
     });
     //
@@ -160,6 +162,16 @@ function initializeMyJqueryPlayTime() {
         //
         myJqueryPromisesPlayTimeFunc_with_newMarkerCoordinates();
     });
+    $('#btnFilterResultsByRadiusAndDistance').click(function (evt) {
+        evt.preventDefault();
+        //
+        showMyOverLay();
+        withPromise_filterTheTableResultsBasedOnRadiusAndDistance(MyApp).done(function () {
+            console.log("done filtering!");
+            stopMyOverLay();
+        });
+    });
+
     //
     // fillDrpLocationTypes();
     //
@@ -266,6 +278,17 @@ function myJqueryPromisesPlayTimeFunc() {
             });
         });
     });
+}
+//
+var withPromise_filterTheTableResultsBasedOnRadiusAndDistance = function (MyApp) {
+    var _deferred = new $.Deferred();
+    console.log("Inside: withPromise_filterTheTableResultsBasedOnRadiusAndDistance() - ");
+    //
+
+    //
+    _deferred.resolve(MyApp);
+    // return promise so that outside code cannot reject/resolve the deferred
+    return _deferred.promise();
 }
 //
 var withPromise_addCircleAroundMyCurrentPosition = function (MyApp) {
